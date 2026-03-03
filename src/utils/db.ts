@@ -11,13 +11,19 @@ import crypto from "crypto";
 type TableName = keyof DB & string;
 type RowType<TName extends TableName> = DB[TName];
 
+function resolveDataRoot(): string {
+  const dataRoot = process.env.DATA_ROOT?.trim();
+  if (!dataRoot) return path.join(process.cwd(), "data");
+  return path.isAbsolute(dataRoot) ? dataRoot : path.join(process.cwd(), dataRoot);
+}
+
 let dbPath: string;
 if (typeof process.versions?.electron !== "undefined") {
   const { app } = require("electron");
   const userDataDir: string = app.getPath("userData");
   dbPath = path.join(userDataDir, "db.sqlite");
 } else {
-  dbPath = path.join(process.cwd(), "db.sqlite");
+  dbPath = path.join(resolveDataRoot(), "db.sqlite");
 }
 console.log("数据库目录:", dbPath);
 const dbDir = path.dirname(dbPath);

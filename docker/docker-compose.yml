@@ -11,15 +11,15 @@ services:
     container_name: toonflow
     restart: unless-stopped
     ports:
-      - "80"
       - "60000:60000"
     environment:
       - NODE_ENV=prod
+      - DATA_ROOT=/app/data
     volumes:
-      # 可选: 持久化日志
-      - ../logs:/var/log
+      - ../logs:/app/logs
+      - ../data:/app/data
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://127.0.0.1:60000/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -1,7 +1,6 @@
 import isPathInside from "is-path-inside";
 import fs from "node:fs/promises";
 import path from "node:path";
-import u from "@/utils";
 
 // 规范化路径：去除前导斜杠，并将路径分隔符统一转换为系统分隔符
 function normalizeUserPath(userPath: string): string {
@@ -22,6 +21,12 @@ function resolveSafeLocalPath(userPath: string, rootDir: string): string {
   return absPath;
 }
 
+function resolveDataRoot(): string {
+  const dataRoot = process.env.DATA_ROOT?.trim();
+  if (!dataRoot) return path.join(process.cwd(), "data");
+  return path.isAbsolute(dataRoot) ? dataRoot : path.join(process.cwd(), dataRoot);
+}
+
 class OSS {
   private rootDir: string;
   private initPromise: Promise<void>;
@@ -32,7 +37,7 @@ class OSS {
       const userDataDir: string = app.getPath("userData");
       this.rootDir = path.join(userDataDir, "uploads");
     } else {
-      this.rootDir = path.join(process.cwd(), "uploads");
+      this.rootDir = path.join(resolveDataRoot(), "uploads");
     }
     // 初始化时自动创建根目录
     this.initPromise = fs.mkdir(this.rootDir, { recursive: true }).then(() => {});
